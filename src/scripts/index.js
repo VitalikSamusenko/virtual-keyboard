@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable camelcase */
 /* eslint-disable eqeqeq */
 /* eslint-disable no-plusplus */
@@ -66,8 +67,14 @@ const keyCode = [
   ['ShiftLeft', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash', 'ArrowUp', 'ShiftRight'],
   ['ControlLeft', 'AltLeft', 'Space', 'AltRight', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'ControlRight']
 ];
-
 let currentLang = RU;
+// if (localStorage.getItem('currentLang') == null) {
+//   currentLang = RU;
+// } else {
+//   currentLang = JSON.parse(localStorage.getItem('currentLang'));
+//   console.log(currentLang);
+//   console.log(RU);
+// }
 
 function createButtons(arr) {
   keyboardWrapper.innerHTML = '';
@@ -257,9 +264,11 @@ buttonsShift.forEach(button => {
       if (currentLang == RU) {
         currentLang = EN;
         changeKeyboard(currentLang);
+        localStorage.setItem('currentLang', JSON.stringify(currentLang));
       } else if (currentLang == EN) {
         currentLang = RU;
         changeKeyboard(currentLang);
+        localStorage.setItem('currentLang', JSON.stringify(currentLang));
       }
       isCaps = false;
       button.classList.remove('active');
@@ -302,6 +311,8 @@ buttonsShift.forEach(button => {
   });
 });
 
+// caps at virtual keyboard
+
 buttonCaps.addEventListener('click', () => {
   buttonCaps.classList.toggle('active');
   if (currentLang == RU && !isCaps) {
@@ -319,3 +330,42 @@ buttonCaps.addEventListener('click', () => {
     isCaps = false;
   }
 });
+
+// switch lang at keyboard
+
+function runOnKeys(func, ...codes) {
+  let pressed = new Set();
+
+  document.addEventListener('keydown', function (event) {
+    pressed.add(event.code);
+
+    for (let code of codes) {
+      if (!pressed.has(code)) {
+        return;
+      }
+    }
+    pressed.clear();
+    func();
+  });
+
+  document.addEventListener('keyup', function (event) {
+    pressed.delete(event.code);
+  });
+}
+
+runOnKeys(
+  () => {
+    if (currentLang == RU) {
+      currentLang = EN;
+      changeKeyboard(currentLang);
+      localStorage.setItem('currentLang', JSON.stringify(currentLang));
+    } else if (currentLang == EN) {
+      currentLang = RU;
+      changeKeyboard(currentLang);
+      localStorage.setItem('currentLang', JSON.stringify(currentLang));
+    }
+    isCaps = false;
+  },
+  'ShiftLeft',
+  'AltLeft'
+);
