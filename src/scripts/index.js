@@ -67,14 +67,8 @@ const keyCode = [
   ['ShiftLeft', 'KeyZ', 'KeyX', 'KeyC', 'KeyV', 'KeyB', 'KeyN', 'KeyM', 'Comma', 'Period', 'Slash', 'ArrowUp', 'ShiftRight'],
   ['ControlLeft', 'AltLeft', 'Space', 'AltRight', 'ArrowLeft', 'ArrowDown', 'ArrowRight', 'ControlRight']
 ];
+
 let currentLang = RU;
-// if (localStorage.getItem('currentLang') == null) {
-//   currentLang = RU;
-// } else {
-//   currentLang = JSON.parse(localStorage.getItem('currentLang'));
-//   console.log(currentLang);
-//   console.log(RU);
-// }
 
 function createButtons(arr) {
   keyboardWrapper.innerHTML = '';
@@ -116,55 +110,122 @@ function changeKeyboard(arr) {
   }
 }
 
+// localstorage
+if (localStorage.getItem('currentLang') == null) {
+  currentLang = RU;
+  localStorage.setItem('currentLang', JSON.stringify(currentLang));
+} else {
+  if (localStorage.getItem('currentLang') == JSON.stringify(RU)) {
+    changeKeyboard(RU);
+    currentLang = RU;
+  } if (localStorage.getItem('currentLang') == JSON.stringify(EN)) {
+    changeKeyboard(EN);
+    currentLang = EN;
+  }
+}
+
+function getCursorPosition() {
+  let CaretPos = 0;
+
+  if (document.selection) {
+    textArea.focus();
+
+    let Sel = document.selection.createRange();
+
+    Sel.moveStart('character', -textArea.value.length);
+
+    CaretPos = Sel.text.length;
+  } else if (textArea.selectionStart || textArea.selectionStart == '0') {
+    CaretPos = textArea.selectionStart;
+  }
+  return CaretPos;
+}
+let cursorPos = 0;
+textArea.addEventListener('click', () => {
+  cursorPos = getCursorPosition();
+});
+function insertInCurPos(substr) {
+  var array = textArea.textContent.split('');
+  array.splice(cursorPos, 0, substr);
+  textArea.textContent = array.join('');
+}
+
 const buttons = document.querySelectorAll('.keyboard__button');
 const buttonsLetter = document.querySelectorAll('.keyboard__button_letter');
 buttonsLetter.forEach(b => b.addEventListener('click', () => {
-  textArea.textContent += b.textContent;
+  insertInCurPos(b.textContent);
+  cursorPos++;
   textArea.focus();
-  textArea.setSelectionRange(textArea.textContent.length, textArea.textContent.length);
+  textArea.setSelectionRange(cursorPos, cursorPos);
 }));
 
 const buttonSpace = document.querySelector('.keyboard__button_space');
 buttonSpace.addEventListener('click', () => {
-  textArea.textContent += ' ';
+  insertInCurPos(' ');
+  cursorPos++;
   textArea.focus();
-  textArea.setSelectionRange(textArea.textContent.length, textArea.textContent.length);
+  textArea.setSelectionRange(cursorPos, cursorPos);
 });
 
 const buttonTab = document.querySelector('.keyboard__button_tab');
 buttonTab.addEventListener('click', () => {
-  textArea.textContent += '\t';
+  insertInCurPos('\t');
+  cursorPos++;
   textArea.focus();
-  textArea.setSelectionRange(textArea.textContent.length, textArea.textContent.length);
+  textArea.setSelectionRange(cursorPos, cursorPos);
+});
+const buttonEnter = document.querySelector('.keyboard__button_enter');
+buttonEnter.addEventListener('click', () => {
+  insertInCurPos('\n');
+  cursorPos++;
+  textArea.focus();
+  textArea.setSelectionRange(cursorPos, cursorPos);
 });
 
 let isCaps = false;
 
 function createEventListenersFoKeyboard() {
-  document.addEventListener('keydown', function (event) {
+  document.addEventListener('keydown', (event) => {
     if (event.key.length == 1) {
       for (let i = 0; i < keyCode.length; i++) {
         for (let j = 0; j < keyCode[i].length; j++) {
           if (keyCode[i][j] == event.code) {
             if (currentLang == RU && !isCaps) {
-              textArea.textContent += RU[i][j];
+              insertInCurPos(RU[i][j]);
+              cursorPos++;
+              textArea.focus();
+              textArea.setSelectionRange(cursorPos, cursorPos);
             } else if (currentLang == RU && isCaps) {
-              textArea.textContent += shiftedRU[i][j];
+              insertInCurPos(shiftedRU[i][j]);
+              cursorPos++;
+              textArea.focus();
+              textArea.setSelectionRange(cursorPos, cursorPos);
             } else if (currentLang == EN && !isCaps) {
-              textArea.textContent += EN[i][j];
+              insertInCurPos(EN[i][j]);
+              cursorPos++;
+              textArea.focus();
+              textArea.setSelectionRange(cursorPos, cursorPos);
             } else if (currentLang == EN && isCaps) {
-              textArea.textContent += shiftedEN[i][j];
+              insertInCurPos(shiftedEN[i][j]);
+              cursorPos++;
+              textArea.focus();
+              textArea.setSelectionRange(cursorPos, cursorPos);
             }
           }
         }
       }
-      textArea.focus();
-      textArea.setSelectionRange(textArea.textContent.length, textArea.textContent.length);
     }
     if (event.key == 'Tab') {
-      textArea.textContent += '\t';
+      insertInCurPos('\t');
+      cursorPos++;
       textArea.focus();
-      textArea.setSelectionRange(textArea.textContent.length, textArea.textContent.length);
+      textArea.setSelectionRange(cursorPos, cursorPos);
+    }
+    if (event.key == 'Enter') {
+      insertInCurPos('\n');
+      cursorPos++;
+      textArea.focus();
+      textArea.setSelectionRange(cursorPos, cursorPos);
     }
     event.stopPropagation();
     event.preventDefault();
@@ -177,7 +238,7 @@ function createEventListenersFoKeyboard() {
       }
     });
   });
-  document.addEventListener('keyup', function (event) {
+  document.addEventListener('keyup', (event) => {
     event.stopPropagation();
     event.preventDefault();
     buttons.forEach(button => {
@@ -192,7 +253,7 @@ createEventListenersFoKeyboard();
 const buttonCaps = document.querySelector('.keyboard__button_caps ');
 // Shift
 let qwe = 0;
-document.addEventListener('keydown', function (event) {
+document.addEventListener('keydown', (event) => {
   event.stopPropagation();
   event.preventDefault();
   if (event.key == 'Shift' && qwe == 0) {
@@ -215,7 +276,7 @@ document.addEventListener('keydown', function (event) {
   }
 });
 
-document.addEventListener('keyup', function (event) {
+document.addEventListener('keyup', (event) => {
   qwe = 0;
   if (event.key == 'Shift') {
     if (currentLang == RU && isCaps) {
@@ -230,7 +291,7 @@ document.addEventListener('keyup', function (event) {
 });
 
 // Capslock
-document.addEventListener('keydown', function (event) {
+document.addEventListener('keydown', (event) => {
   event.stopPropagation();
   event.preventDefault();
   if (event.key == 'CapsLock') {
@@ -336,7 +397,7 @@ buttonCaps.addEventListener('click', () => {
 function runOnKeys(func, ...codes) {
   let pressed = new Set();
 
-  document.addEventListener('keydown', function (event) {
+  document.addEventListener('keydown', (event) => {
     pressed.add(event.code);
 
     for (let code of codes) {
@@ -348,7 +409,7 @@ function runOnKeys(func, ...codes) {
     func();
   });
 
-  document.addEventListener('keyup', function (event) {
+  document.addEventListener('keyup', (event) => {
     pressed.delete(event.code);
   });
 }
@@ -369,3 +430,109 @@ runOnKeys(
   'ShiftLeft',
   'AltLeft'
 );
+
+// Backspace
+
+const buttonBackspace = document.querySelector('.keyboard__button_backspace');
+
+function backSpace() {
+  if (cursorPos > 0) {
+    let array = textArea.textContent.split('');
+    cursorPos--;
+    array.splice(cursorPos, 1);
+    textArea.textContent = array.join('');
+  }
+  textArea.focus();
+  textArea.setSelectionRange(cursorPos, cursorPos);
+}
+
+buttonBackspace.addEventListener('click', backSpace);
+
+// delete
+const buttonDel = document.querySelector('.keyboard__button_del');
+
+function del() {
+  if (cursorPos < textArea.textContent.length) {
+    let array = textArea.textContent.split('');
+    array.splice(cursorPos, 1);
+    textArea.textContent = array.join('');
+  }
+  textArea.focus();
+  textArea.setSelectionRange(cursorPos, cursorPos);
+}
+
+buttonDel.addEventListener('click', del);
+
+document.addEventListener('keydown', (event) => {
+  event.stopPropagation();
+  event.preventDefault();
+  if (event.key == 'Backspace') {
+    backSpace();
+  }
+  if (event.key == 'Delete') {
+    del();
+  }
+});
+
+// arrow
+
+const buttonArrowLeft = document.querySelector('.keyboard__button_arrLeft');
+const buttonArrowRight = document.querySelector('.keyboard__button_arrRight');
+const buttonArrowUp = document.querySelector('.keyboard__button_arrUp');
+const buttonArrowDown = document.querySelector('.keyboard__button_arrDown');
+
+function toLeft() {
+  if (cursorPos > 0) {
+    cursorPos--;
+  }
+  textArea.focus();
+  textArea.setSelectionRange(cursorPos, cursorPos);
+}
+
+function toRight() {
+  if (cursorPos < textArea.textContent.length) {
+    cursorPos++;
+  }
+  textArea.focus();
+  textArea.setSelectionRange(cursorPos, cursorPos);
+}
+
+buttonArrowLeft.addEventListener('click', toLeft);
+buttonArrowRight.addEventListener('click', toRight);
+
+buttonArrowUp.addEventListener('click', () => {
+  insertInCurPos('▲');
+  cursorPos++;
+  textArea.focus();
+  textArea.setSelectionRange(cursorPos, cursorPos);
+});
+
+buttonArrowDown.addEventListener('click', () => {
+  insertInCurPos('▼');
+  cursorPos++;
+  textArea.focus();
+  textArea.setSelectionRange(cursorPos, cursorPos);
+});
+
+document.addEventListener('keydown', (event) => {
+  event.stopPropagation();
+  event.preventDefault();
+  if (event.code == 'ArrowLeft') {
+    toLeft();
+  }
+  if (event.code == 'ArrowRight') {
+    toRight();
+  }
+  if (event.code == 'ArrowUp') {
+    insertInCurPos('▲');
+    cursorPos++;
+    textArea.focus();
+    textArea.setSelectionRange(cursorPos, cursorPos);
+  }
+  if (event.code == 'ArrowDown') {
+    insertInCurPos('▼');
+    cursorPos++;
+    textArea.focus();
+    textArea.setSelectionRange(cursorPos, cursorPos);
+  }
+});
